@@ -31,8 +31,6 @@ python bot.py analyze && python bot.py post-now
 
 ## ✨ Features
 
-## ✨ Features
-
 <table>
 <tr>
 <td width="50%">
