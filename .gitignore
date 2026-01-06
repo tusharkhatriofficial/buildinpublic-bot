@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+posted_tweets.json
+venv/
+env/
+.venv/
+*.log
+code/
