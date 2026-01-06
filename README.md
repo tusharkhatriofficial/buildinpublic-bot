@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌊 DevEcho
+# DevEcho
 
 ### *Your code deserves an audience. Automate the storytelling.*
 
