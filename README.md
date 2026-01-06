@@ -195,15 +195,9 @@ Follow these steps carefully to get your Twitter API keys:
 - Bearer Token is optional but recommended
 - Access Token must be generated AFTER setting Read and Write permissions
 
-### 5. Get Groq API Key
+### 5. Configure Environment Variables
 
-1. Go to [console.groq.com](https://console.groq.com/)
-2. Sign up for a free account
-3. Create an API key
-
-### 6. Configure Environment Variables
-
-Copy the example environmcredentials:
+Copy the example environment file and add your credentials:
 
 ```env
 TWITTER_API_KEY=your_api_key_here
@@ -218,13 +212,7 @@ GROQ_API_KEY=your_groq_api_key_here
 TWEET_TIME=10:00
 ```
 
-### 7ER_BEARER_TOKEN=your_bearer_token_here
-
-# Schedule time (24-hour format, e.g., 10:00, 14:30)
-TWEET_TIME=10:00
-```
-
-### 5. Add Your Code
+### 6. Add Your Code
 
 **Simply copy your entire project** to the `code/` folder:
 
@@ -239,9 +227,9 @@ The bot works with **ANY programming language**:
 - ✅ JavaScript/TypeScript (React, Node.js, Next.js)
 - ✅ Go, Rust, C++, and more!
 
-**Im8ortant:** The bot analyzes **Git commit history**, so make sure your project is a Git repository.
+**Important:** The bot analyzes **Git commit history**, so make sure your project is a Git repository.
 
-### 6. Build Knowledge Base (IMPORTANT - First Time Only)
+### 7. Build Knowledge Base (IMPORTANT - First Time Only)
 
 Before posting tweets, analyze your codebase once to avoid rate limits:
 
@@ -255,9 +243,9 @@ This command will:
 - ✅ Take 2-3 minutes (with 2-second delays between commits)
 - ✅ Prevent rate limit errors when posting tweets
 
-**Yo9 only need to run this once** or when you want to refresh the knowledge base with new commits.
+**You only need to run this once** or when you want to refresh the knowledge base with new commits.
 
-### 7. Test the Bot
+### 8. Test the Bot
 
 Before running it live, test tweet generation:
 
@@ -267,13 +255,15 @@ python bot.py test
 
 This will generate a tweet from your first commit without posting it (uses cached knowledge base).
 
-### 10. Post Your First Tweet
+### 9. Post Your First Tweet
 
 ```bash
 python bot.py post-now
 ```
 
 Your first tweet is now live! 🎉
+
+---
 
 ## 🎮 Usage
 
@@ -329,7 +319,17 @@ python bot.py overview
 
 Generate a test tweet without posting:
 
-```bash   # Main bot orchestrator
+```bash
+python bot.py test
+```
+
+---
+
+## 📁 Project Structure
+
+```
+devecho/
+├── bot.py                     # Main bot orchestrator
 ├── universal_code_analyzer.py # Multi-language code analysis
 ├── llm_tweet_generator.py     # AI-powered tweet generation
 ├── requirements.txt           # Python dependencies
@@ -341,9 +341,12 @@ Generate a test tweet without posting:
 ├── bot.log                   # Bot execution logs (auto-generated)
 ├── code/                     # Your project folder to analyze
 │   └── (your project files)
-└── README.md                 # Documentationdependencies
-├── .env                    # Configuration (create from .env.example)
-├── .eHow It Generates Tweets
+└── README.md                 # Documentation
+```
+
+---
+
+## 🧠 How It Generates Tweets
 
 The bot creates engaging tweets by:
 
@@ -363,6 +366,8 @@ The bot creates engaging tweets by:
 [GitHub Link]
 ```
 
+---
+
 ## 🔧 Customization
 
 ### Change Posting Schedule
@@ -378,17 +383,22 @@ TWEET_TIME=14:30  # Posts at 2:30 PM daily
 When you have new commits:
 
 ```bash
-python bot.py analyze  # Re-analyze with new commits`TWEET_TIME` in your `.env` file to change when tweets are posted.
+python bot.py analyze  # Re-analyze with new commits
+```
 
 ### Adjust Tweet Generation Strategy
 
-Modify the probabilities in `bot.py` `generate_tweet()` method:
+Modify the `TWEET_TIME` in your `.env` file to change when tweets are posted.
+
+You can also adjust tweet generation strategy by modifying the probabilities in `bot.py` `generate_tweet()` method:
 
 ```python
 # Strategy 1: File analysis (70% of the time)
 if random.random() < 0.7:
     # ...
 ```
+
+---
 
 ## 📊 Tracking Posted Tweets
 
@@ -398,6 +408,8 @@ All posted tweets are saved in `posted_tweets.json` with:
 - Timestamp
 
 This prevents duplicate posts and helps you track your progress.
+
+---
 
 ## 🐛 Troubleshooting
 
@@ -419,6 +431,8 @@ This prevents duplicate posts and helps you track your progress.
 - Ensure the bot is running continuously
 - Check that `TWEET_TIME` is in correct 24-hour format (HH:MM)
 - Review `bot.log` for error messages
+
+---
 
 ## 🚦 Running in Production
 
@@ -448,6 +462,8 @@ Restart=always
 WantedBy=multi-user.target
 ```
 
+---
+
 ## ⚠️ Important Notes
 
 - **Rate Limits**: Twitter has rate limits. The bot uses `wait_on_rate_limit=True` to handle this automatically.
@@ -455,9 +471,13 @@ WantedBy=multi-user.target
 - **Content Policy**: Ensure your tweets follow [Twitter's Automation Rules](https://help.twitter.com/en/rules-and-policies/twitter-automation).
 - **Privacy**: Don't commit your `.env` file with real credentials to version control!
 
+---
+
 ## 📝 License
 
 This project is open source and available for personal and commercial use.
+
+---
 
 ## 🤝 Contributing
 
@@ -467,6 +487,8 @@ Feel free to fork, modify, and improve this bot! Some ideas:
 - More sophisticated tweet templates
 - AI-powered tweet generation
 - Analytics dashboard
+
+---
 
 ## 💡 Tips for Building in Public
 
