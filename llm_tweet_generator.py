@@ -100,7 +100,27 @@ https://github.com/user/eventara
         
         if tweet_type == 'commit':
             tech = ' '.join(insights.get('tech_stack', []))
-            return f"""{base_context}
+            
+            # Check if we have LLM insights
+            llm_insights = insights.get('llm_insights', {})
+            
+            if llm_insights:
+                # Use rich LLM insights for better tweets
+                return f"""{base_context}
+
+Commit details:
+- What changed: {insights['message']}
+- What was built: {llm_insights.get('what_built', 'N/A')}
+- Technical detail: {llm_insights.get('technical_detail', 'N/A')}
+- Impact: {llm_insights.get('impact', 'N/A')}
+- Suggested hook: {llm_insights.get('hook', 'N/A')}
+- Tech used: {tech if tech else 'Various technologies'}
+- Files changed: {insights['files_changed']}
+
+Generate a compelling tweet using these insights. Start with the hook or project name, highlight the technical achievement, and end with impact. Include project name at start and GitHub link at end."""
+            else:
+                # Fallback to basic info
+                return f"""{base_context}
 
 Commit details:
 - What changed: {insights['message']}

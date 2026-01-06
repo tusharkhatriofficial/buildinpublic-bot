@@ -79,7 +79,15 @@ class TwitterBot:
         try:
             # Get chronological insights if not already loaded
             if not self.all_insights:
-                self.all_insights = self.analyzer.get_chronological_insights()
+                # Try to load from cache first
+                cached = self.analyzer.load_from_cache()
+                if cached:
+                    self.all_insights = cached
+                else:
+                    logger.warning("⚠️  No knowledge base found. Run 'python bot.py analyze' first to avoid rate limits.")
+                    print("⚠️  Using basic analysis without LLM insights (may be less engaging)")
+                    print("   Run 'python bot.py analyze' first to build knowledge base with LLM.\n")
+                    self.all_insights = self.analyzer.get_chronological_insights()
                 logger.info(f"Loaded {len(self.all_insights)} commits from git history")
             
             if not self.all_insights:
@@ -211,7 +219,16 @@ def main():
     if len(sys.argv) > 1:
         command = sys.argv[1]
         
-        if command == 'test':
+        if command == 'analyze':
+            # Build knowledge base once
+            print("🚀 Building knowledge base from codebase...\n")
+            print("⏱️  This will analyze all commits with LLM once to avoid future rate limits.")
+            print("   Please wait, this may take a few minutes...\n")
+            success = bot.analyzer.build_knowledge_base()
+            if not success:
+                sys.exit(1)
+        
+        elif command == 'test':
             # Test mode - generate tweet without posting
             print("Testing tweet generation...")
             tweet = bot.test_tweet()
@@ -254,7 +271,12 @@ def main():
         
         else:
             print(f"Unknown command: {command}")
-            print("Available commands: test, post-now, overview, commits")
+            print("\nAvailable commands:")
+            print("  analyze   - Build knowledge base (run once to avoid rate limits)")
+            print("  test      - Generate and display a test tweet")
+            print("  post-now  - Generate and post a tweet immediately")
+            print("  overview  - Show codebase analysis overview")
+            print("  commits   - List all commits in chronological order")
     
     else:
         # Normal mode - run with scheduler

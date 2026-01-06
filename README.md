@@ -30,40 +30,86 @@ An intelligent Twitter bot that analyzes your **entire codebase** (Java, Python,
 
 ## 🚀 Quick Start
 
-### 1. Clone or Download This Project
+### 1. Clone This Repository
 
 ```bash
-cd "/Users/tusharkhatri/CDisk/twitter bot"
+git clone https://github.com/YOUR_USERNAME/twitter-bot.git
+cd twitter-bot
 ```
 
-### 2. Install Dependencies
+### 2. Create Virtual Environment
+
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Get Twitter API Credentials
+### 4. Get Twitter API Credentials
 
+Follow these steps carefully to get your Twitter API keys:
+
+#### Step 1: Create Twitter Developer Account
 1. Go to [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard)
-2. Create a new project and app
-3. Generate API keys and tokens:
-   - API Key (Consumer Key)
-   - API Secret (Consumer Secret)
-   - Access Token
-   - Access Token Secret
-   - Bearer Token
+2. Sign in with your Twitter account
+3. Apply for a developer account (usually approved instantly for basic access)
 
-**Important:** Make sure to enable "Read and Write" permissions for your app!
+#### Step 2: Create a Project and App
+1. Click **"+ Create Project"**
+2. Enter project name (e.g., "Build in Public Bot")
+3. Select use case: **"Making a bot"**
+4. Enter project description
+5. Create an App within the project
 
-### 4. Configure Environment Variables
+#### Step 3: Configure App Settings
+1. Go to your App Settings
+2. Click **"User authentication settings"** → **"Set up"**
+3. Configure as follows:
+   - **App permissions**: Select **"Read and Write"** (CRITICAL!)
+   - **Type of App**: Select **"Web App, Automated App or Bot"**
+   - **Callback URI**: Enter `http://localhost:3000` (required but not used)
+   - **Website URL**: Enter your GitHub repo URL
+4. Click **"Save"**
 
-Copy the example environment file:
+#### Step 4: Generate Keys and Tokens
+1. Go to **"Keys and tokens"** tab
+2. **API Key and Secret** (Consumer Keys):
+   - Click **"Regenerate"** if already generated
+   - Copy both and save securely
+3. **Bearer Token**:
+   - Click **"Regenerate"** if needed
+   - Copy and save
+4. **Access Token and Secret**:
+   - Click **"Generate"** (MUST do this AFTER setting Read and Write permissions!)
+   - Copy both and save securely
 
-```bash
-cp .env.example .env
-```
+#### Step 5: Verify Permissions
+- Make sure Access Token shows **"Read and Write"** permissions
+- If it says "Read-only", you need to:
+  1. Delete the current Access Token
+  2. Set permissions to "Read and Write" in User authentication settings
+  3. Generate new Access Token and Secret
 
-Edit `.env` and add your Twitter credentials:
+**⚠️ Important Notes:**
+- Keep all keys private and secure
+- Never commit them to Git (use .env file)
+- Bearer Token is optional but recommended
+- Access Token must be generated AFTER setting Read and Write permissions
+
+### 5. Get Groq API Key
+
+1. Go to [console.groq.com](https://console.groq.com/)
+2. Sign up for a free account
+3. Create an API key
+
+### 6. Configure Environment Variables
+
+Copy the example environmcredentials:
 
 ```env
 TWITTER_API_KEY=your_api_key_here
@@ -71,6 +117,14 @@ TWITTER_API_SECRET=your_api_secret_here
 TWITTER_ACCESS_TOKEN=your_access_token_here
 TWITTER_ACCESS_TOKEN_SECRET=your_access_token_secret_here
 TWITTER_BEARER_TOKEN=your_bearer_token_here
+
+GROQ_API_KEY=your_groq_api_key_here
+
+# Schedule time (24-hour format, e.g., 10:00, 14:30)
+TWEET_TIME=10:00
+```
+
+### 7ER_BEARER_TOKEN=your_bearer_token_here
 
 # Schedule time (24-hour format, e.g., 10:00, 14:30)
 TWEET_TIME=10:00
@@ -91,9 +145,25 @@ The bot works with **ANY programming language**:
 - ✅ JavaScript/TypeScript (React, Node.js, Next.js)
 - ✅ Go, Rust, C++, and more!
 
-**Important:** The bot analyzes **Git commit history**, so make sure your project is a Git repository.
+**Im8ortant:** The bot analyzes **Git commit history**, so make sure your project is a Git repository.
 
-### 6. Test the Bot
+### 6. Build Knowledge Base (IMPORTANT - First Time Only)
+
+Before posting tweets, analyze your codebase once to avoid rate limits:
+
+```bash
+python bot.py analyze
+```
+
+This command will:
+- ✅ Analyze all commits using LLM for rich insights
+- ✅ Cache everything in `commit_insights.json`
+- ✅ Take 2-3 minutes (with 2-second delays between commits)
+- ✅ Prevent rate limit errors when posting tweets
+
+**Yo9 only need to run this once** or when you want to refresh the knowledge base with new commits.
+
+### 7. Test the Bot
 
 Before running it live, test tweet generation:
 
@@ -101,9 +171,39 @@ Before running it live, test tweet generation:
 python bot.py test
 ```
 
-This will generate a tweet from your first commit without posting it.
+This will generate a tweet from your first commit without posting it (uses cached knowledge base).
+
+### 10. Post Your First Tweet
+
+```bash
+python bot.py post-now
+```
+
+Your first tweet is now live! 🎉
 
 ## 🎮 Usage
+
+### Available Commands
+
+```bash
+# Build knowledge base (run once, first time only)
+python bot.py analyze
+
+# Test tweet generation (without posting)
+python bot.py test
+
+# Post a tweet immediately
+python bot.py post-now
+
+# View codebase statistics
+python bot.py overview
+
+# List all commits chronologically
+python bot.py commits
+
+# Run bot with daily scheduler
+python bot.py
+```
 
 ### Run the Bot (Scheduled Mode)
 
@@ -135,59 +235,56 @@ python bot.py overview
 
 Generate a test tweet without posting:
 
-```bash
-python bot.py test
-```
-
-## 📁 Project Structure
-
-```
-twitter-bot/
-├── bot.py                  # Main bot script
-├── code_analyzer.py        # Code analysis module
-├── tweet_generator.py      # Tweet generation logic
-├── requirements.txt        # Python dependencies
+```bash   # Main bot orchestrator
+├── universal_code_analyzer.py # Multi-language code analysis
+├── llm_tweet_generator.py     # AI-powered tweet generation
+├── requirements.txt           # Python dependencies
+├── .env                       # Your API credentials (create from .env.example)
+├── .env.example              # Example configuration template
+├── .gitignore                # Git ignore rules
+├── commit_insights.json      # Cached LLM analysis (auto-generated)
+├── posted_tweets.json        # Posted tweet tracker (auto-generated)
+├── bot.log                   # Bot execution logs (auto-generated)
+├── code/                     # Your project folder to analyze
+│   └── (your project files)
+└── README.md                 # Documentationdependencies
 ├── .env                    # Configuration (create from .env.example)
-├── .env.example           # Example configuration
-├── .gitignore             # Git ignore file
-├── posted_tweets.json     # Track posted tweets (auto-generated)
-├── bot.log               # Bot logs (auto-generated)
-├── code/                 # Put your code here to analyze
-│   └── (your Python files)
-└── README.md             # This file
+├── .eHow It Generates Tweets
+
+The bot creates engaging tweets by:
+
+1. **Analyzing Commits** - Extracts what was built, tech used, and impact
+2. **LLM Deep Analysis** - Uses Groq's Llama 3.3 70B to understand code context
+3. **Caching Insights** - Stores analysis once to avoid rate limits
+4. **Chronological Order** - Tweets follow your actual development timeline
+5. **Smart Generation** - Creates human-like tweets with hashtags and links
+
+### Tweet Structure
+
 ```
-
-## 🎨 Tweet Types
-
-The bot generates various types of engaging tweets:
-
-1. **Feature Tweets** - Highlight new features or functionality
-2. **Class Tweets** - Showcase object-oriented design
-3. **Function Tweets** - Share interesting functions
-4. **Milestone Tweets** - Celebrate progress (lines of code, files, etc.)
-5. **Challenge Tweets** - Discuss problems and solutions
-6. **Tech Stack Tweets** - Show off libraries and tools used
-7. **Insight Tweets** - Share lessons learned
+[Project Name]: [Hook/Opening]
+[What was built] [Technical detail]
+[Impact/Why it matters]
+#BuildInPublic #RelevantTech
+[GitHub Link]
+```
 
 ## 🔧 Customization
 
-### Modify Tweet Templates
-
-Edit `tweet_generator.py` and customize the `templates` dictionary to match your style:
-
-```python
-self.templates = {
-    'feature': [
-        "🚀 Just implemented {feature}! {description} #BuildInPublic",
-        # Add your own templates here
-    ],
-    # ... more categories
-}
-```
-
 ### Change Posting Schedule
 
-Edit the `TWEET_TIME` in your `.env` file to change when tweets are posted.
+Edit the `TWEET_TIME` in your `.env` file:
+
+```env
+TWEET_TIME=14:30  # Posts at 2:30 PM daily
+```
+
+### Refresh Knowledge Base
+
+When you have new commits:
+
+```bash
+python bot.py analyze  # Re-analyze with new commits`TWEET_TIME` in your `.env` file to change when tweets are posted.
 
 ### Adjust Tweet Generation Strategy
 

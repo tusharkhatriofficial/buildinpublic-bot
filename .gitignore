@@ -5,6 +5,7 @@ __pycache__/
 *.pyd
 .Python
 posted_tweets.json
+commit_insights.json
 venv/
 env/
 .venv/

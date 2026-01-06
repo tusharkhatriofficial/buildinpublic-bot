@@ -2,19 +2,47 @@
 Universal Code Analyzer
 Analyzes any codebase (Java, Python, JavaScript, TypeScript, etc.) and extracts insights
 Uses git history to understand development chronology
+Uses LLM for deep code understanding
 """
 import os
 import subprocess
 import re
+import time
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+from pathlib import Path
 import json
+import logging
+from groq import Groq
+
+logger = logging.getLogger(__name__)
 
 
 class UniversalCodeAnalyzer:
     def __init__(self, code_folder: str):
         self.code_folder = code_folder
         self.is_git_repo = os.path.exists(os.path.join(code_folder, '.git'))
+        self.cache_file = os.path.join(os.path.dirname(code_folder), 'commit_insights.json')
+        
+        # Initialize LLM for deep analysis
+        groq_api_key = os.getenv('GROQ_API_KEY')
+        self.use_llm = groq_api_key and groq_api_key != 'your_groq_api_key_here'
+        
+        if self.use_llm:
+            try:
+                self.groq_client = Groq(api_key=groq_api_key)
+                logger.info("LLM initialized for deep code analysis")
+            except Exception as e:
+                logger.warning(f"Failed to initialize LLM for analysis: {e}")
+                self.use_llm = False
+        
+        self.supported_extensions = {
+            '.py': 'Python', '.js': 'JavaScript', '.jsx': 'React',
+            '.ts': 'TypeScript', '.tsx': 'React', '.java': 'Java',
+            '.kt': 'Kotlin', '.go': 'Go', '.rs': 'Rust',
+            '.cpp': 'C++', '.c': 'C', '.rb': 'Ruby',
+            '.php': 'PHP', '.swift': 'Swift', '.scala': 'Scala'
+        }
         
     def get_git_commits(self, limit: int = 100) -> List[Dict[str, Any]]:
         """Get git commit history with file changes"""
@@ -65,11 +93,11 @@ class UniversalCodeAnalyzer:
             return []
     
     def analyze_commit(self, commit: Dict[str, Any]) -> Dict[str, Any]:
-        """Analyze a single commit to extract insights"""
+        """Analyze a single commit to extract insights with LLM enhancement"""
         message = commit['message'].lower()
         files = commit['files']
         
-        # Categorize the commit
+        # Get basic categorization
         categories = []
         if any(word in message for word in ['add', 'implement', 'create', 'new']):
             categories.append('feature')
@@ -121,7 +149,7 @@ class UniversalCodeAnalyzer:
             if 'kafka' in file.lower():
                 tech_stack.add('Kafka')
         
-        return {
+        analyzed = {
             'hash': commit['hash'][:8],
             'timestamp': commit['timestamp'],
             'date': datetime.fromtimestamp(commit['timestamp']).strftime('%Y-%m-%d'),
@@ -129,8 +157,55 @@ class UniversalCodeAnalyzer:
             'categories': categories if categories else ['general'],
             'tech_stack': list(tech_stack),
             'files_changed': len(files),
-            'files': files[:10]  # Limit to first 10 files
+            'files': files[:10]
         }
+        
+        # Use LLM for deeper analysis
+        if self.use_llm and len(files) > 0:
+            llm_insights = self._analyze_commit_with_llm(commit, analyzed)
+            if llm_insights:
+                analyzed['llm_insights'] = llm_insights
+        
+        return analyzed
+    
+    def _analyze_commit_with_llm(self, commit: Dict[str, Any], basic_analysis: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Use LLM to deeply understand commit context and impact"""
+        if not self.use_llm or not self.groq_client:
+            return None
+        
+        try:
+            files_summary = ", ".join(basic_analysis['tech_stack'][:5])
+            
+            prompt = f"""Analyze this git commit for a developer building in public. Extract key insights for an engaging Twitter post.
+
+Commit: {commit['message']}
+Files changed: {basic_analysis['files_changed']} ({files_summary})
+Categories: {', '.join(basic_analysis['categories'])}
+Date: {basic_analysis['date']}
+
+Provide JSON with:
+- "what_built": Concise description of what was created/fixed (15 words max)
+- "technical_detail": One interesting technical aspect
+- "impact": Why this matters (10 words max)
+- "hook": Engaging tweet opening (10 words max)
+
+Focus on what developers would find interesting."""
+
+            response = self.groq_client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model="llama-3.3-70b-versatile",
+                temperature=0.7,
+                max_tokens=300,
+                response_format={"type": "json_object"}
+            )
+            
+            insights = json.loads(response.choices[0].message.content)
+            logger.info(f"LLM insights: {insights.get('what_built', 'N/A')}")
+            return insights
+            
+        except Exception as e:
+            logger.warning(f"LLM analysis failed: {e}")
+            return None
     
     def get_project_info(self) -> Dict[str, Any]:
         """Get project name and GitHub repository URL"""
@@ -244,6 +319,72 @@ class UniversalCodeAnalyzer:
             insights.append(analyzed)
         
         return insights
+    
+    def build_knowledge_base(self) -> bool:
+        """Build and cache LLM insights for all commits (run once to avoid rate limits)"""
+        if not self.use_llm:
+            print("❌ LLM not available. Please set GROQ_API_KEY in .env file.")
+            return False
+        
+        print("🔍 Analyzing codebase with LLM (this may take a few minutes)...")
+        print("⏳ Building knowledge base to avoid future rate limits...\n")
+        
+        commits = self.get_git_commits()
+        commits.reverse()  # Oldest first
+        
+        cached_insights = []
+        
+        for idx, commit in enumerate(commits, 1):
+            print(f"📊 [{idx}/{len(commits)}] Analyzing: {commit['message'][:60]}...")
+            
+            try:
+                analyzed = self.analyze_commit(commit)
+                cached_insights.append(analyzed)
+                
+                # Add delay to avoid rate limits (2 seconds between requests)
+                if idx < len(commits):
+                    time.sleep(2)
+                    
+            except Exception as e:
+                logging.error(f"Error analyzing commit {commit['hash'][:8]}: {e}")
+                print(f"  ⚠️  Skipped due to error")
+        
+        # Save to cache file
+        try:
+            cache_data = {
+                'generated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'total_commits': len(cached_insights),
+                'commits': cached_insights
+            }
+            
+            with open(self.cache_file, 'w') as f:
+                json.dump(cache_data, f, indent=2)
+            
+            print(f"\n✅ Knowledge base created successfully!")
+            print(f"📁 Cached {len(cached_insights)} commits to: commit_insights.json")
+            print(f"💡 Now run 'python bot.py test' or 'python bot.py post-now' without hitting rate limits.\n")
+            return True
+            
+        except Exception as e:
+            logging.error(f"Failed to save cache: {e}")
+            print(f"❌ Failed to save knowledge base: {e}")
+            return False
+    
+    def load_from_cache(self) -> Optional[List[Dict[str, Any]]]:
+        """Load pre-analyzed insights from cache"""
+        if not os.path.exists(self.cache_file):
+            return None
+        
+        try:
+            with open(self.cache_file, 'r') as f:
+                cache_data = json.load(f)
+            
+            logger.info(f"✅ Loaded {cache_data['total_commits']} commits from cache (generated at {cache_data['generated_at']})")
+            return cache_data['commits']
+            
+        except Exception as e:
+            logging.error(f"Failed to load cache: {e}")
+            return None
     
     def read_readme(self) -> Optional[str]:
         """Read README file if it exists"""
