@@ -1,6 +1,7 @@
 """
-Twitter Bot - Main Script
+DevEcho - Twitter Bot
 Automatically posts daily tweets about your codebase
+Transform your Git commits into engaging social media content
 """
 import os
 import tweepy
