@@ -2,7 +2,36 @@
 
 # 🌊 DevEcho
 
-### *Features
+### *Your code deserves an audience. Automate the storytelling.*
+
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Twitter](https://img.shields.io/badge/Twitter-Bot-1DA1F2?logo=twitter)](https://twitter.com)
+[![Made with Groq](https://img.shields.io/badge/Powered%20by-Groq-orange)](https://groq.com)
+[![Build in Public](https://img.shields.io/badge/Build-in%20Public-success)](https://twitter.com/search?q=%23BuildInPublic)
+
+[🚀 Quick Start](#-quick-start) • [✨ Features](#-features) • [📖 Documentation](#-documentation) • [🤝 Contributing](#-contributing)
+
+---
+
+</div>
+
+**DevEcho** is an AI-powered Twitter bot that transforms your Git commits into engaging social media content. Built for developers who want to #BuildInPublic without the manual overhead.
+
+> **📁 How it works:** Place your project in the `code/` folder → DevEcho reads your Git history → AI generates tweets → Posts daily automatically
+
+```bash
+# One command to rule them all
+python bot.py analyze && python bot.py post-now
+```
+
+**Stop manually tweeting. Start building.**
+
+---
+
+## ✨ Features
+
+## ✨ Features
 
 <table>
 <tr>
@@ -28,52 +57,33 @@
 </td>
 </tr>
 </table>
----
 
-</div>
-
-**DevEcho** is an AI-powered Twitter bot that transforms your Git commits into engaging social media content. Built for developers who want to #BuildInPublic without the manual overhead.
-
-```bash
-# One command to rule them all
 ---
 
 ## 🎯 How It Works
 
-```mermaid
-graph LR
-    A[Your Codebase] --> B[Git History Analysis]
-    B --> C[AI Deep Dive]
-    C --> D[Cache Insights]
-    D --> E[Generate Tweet]
-    E --> F[Post to Twitter]
-    F --> G[Track & Repeat]
-    style A fill:#4CAF50
-    style F fill:#1DA1F2
-```
+**1.** Analyze your commits once → **2.** AI extracts insights → **3.** Tweet daily on autopilot
 
 <div align="center">
 
-**1.** Analyze your commits once → **2.** AI extracts insights → **3.** Tweet daily on autopilot
+| Step | What Happens |
+|------|-------------|
+| 📁 | Copy your project to `code/` folder |
+| 🔍 | DevEcho reads Git commit history |
+| 🤖 | AI analyzes what you built |
+| 💾 | Insights cached locally |
+| 🐦 | Tweets posted daily |
 
 </div>
 
 ---
 
----
+## 🎨 Example Tweets
 
-## 📋 Prerequisites
+<table>
+<tr>
+<td width="50%">
 
-<div align="center">
-
-| Requirement | Status | Get It |
-|------------|--------|--------|
-| Python 3.8+ | 🐍 | [Download](https://python.org) |
-| Twitter APIDevEcho
-
-```bash
-git clone https://github.com/YOUR_USERNAME/devecho.git
-cd devecho
 **Before DevEcho:**
 ```
 Spent all day coding... 
@@ -96,37 +106,31 @@ github.com/user/eventara
 </td>
 </tr>
 </table>
-- 🔍 **Universal Code Analysis** - Analyzes ANY programming language (Java, Python, JS, TS, Go, Rust, etc.)
-- 📅 **Chronological Tweets** - Uses Git commit history to tweet in order (earliest work first)
-- 🤖 **AI-Powered** - Uses Groq's Llama 3.3 70B to generate human-like, engaging tweets
-- 📱 **Daily Automated Tweets** - Posts one engaging tweet per day
-- 🎯 **Smart Content** - Creates diverse tweet types based on actual commits and progress
-- 🚫 **Duplicate Prevention** - Never posts the same content twice
-- 💬 **No Emojis** - Clean, professional tweets that sound genuinely human
-- 🔒 **280 Character Limit** - Respects Twitter's free account limitations
 
-## 🎯 How It Works
-
-1. **Analyzes your Git repository** - Reads commit history chronologically
-2. **Understands what you built** - Detects languages, frameworks, features, fixes
-3. **Generates engaging tweets** - Uses AI to create compelling narratives about your work
-4. **Posts in order** - Tweets follow your actual development journey from beginning to end
-5. **Tracks progress** - Remembers what's been posted, never repeats
+---
 
 ## 📋 Prerequisites
 
-- Python 3.8 or higher
-- Twitter Developer Account with API access
-- Groq API key (free at [console.groq.com](https://console.groq.com/))
-- A `code` folder with your project (can be ANY language)
+<div align="center">
+
+| Requirement | Status | Get It |
+|------------|--------|--------|
+| Python 3.8+ | 🐍 | [Download](https://python.org) |
+| Twitter API | 🐦 | [Get Keys](https://developer.twitter.com) |
+| Groq API (Free) | 🤖 | [Sign Up](https://console.groq.com) |
+| Git Repository | 📁 | Your project |
+
+</div>
+
+---
 
 ## 🚀 Quick Start
 
-### 1. Clone This Repository
+### 1. Clone DevEcho
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/twitter-bot.git
-cd twitter-bot
+git clone https://github.com/YOUR_USERNAME/devecho.git
+cd devecho
 ```
 
 ### 2. Create Virtual Environment
@@ -263,13 +267,7 @@ Before running it live, test tweet generation:
 python bot.py test
 ```
 
-<div align="center">
-
-🎉 **Congratulations!** Your first automated tweet is now live!
-
-</div>
-
----your first commit without posting it (uses cached knowledge base).
+This will generate a tweet from your first commit without posting it (uses cached knowledge base).
 
 ### 10. Post Your First Tweet
 
