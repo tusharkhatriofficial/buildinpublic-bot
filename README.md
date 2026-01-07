@@ -269,6 +269,34 @@ Your first tweet is now live! 🎉
 
 ---
 
+## 🖱️ One-Click Quick Actions (macOS)
+
+For ultimate convenience, use these clickable files - **no terminal required!**
+
+### 📤 Post Tweet Instantly
+**Double-click:** `post-tweet.command`
+- Generates and posts a tweet immediately
+- Shows progress in a terminal window
+- Auto-activates virtual environment
+- Press Enter to close when done
+
+### 🧪 Test Tweet Generation
+**Double-click:** `test-tweet.command`
+- Generates a preview tweet without posting
+- Perfect for checking quality before going live
+- Shows the tweet in terminal
+- Press Enter to close when done
+
+**⚠️ First-time setup (macOS only):**
+1. Right-click the `.command` file
+2. Select "Open" 
+3. Click "Open" in the security dialog
+4. After this, double-clicking will work normally
+
+**💡 Pro Tip:** Add these to your Dock for instant access!
+
+---
+
 ## 🎮 Usage
 
 ### Available Commands
@@ -397,6 +425,8 @@ devecho/
 ├── bot.py                     # Main bot orchestrator
 ├── universal_code_analyzer.py # Multi-language code analysis
 ├── llm_tweet_generator.py     # AI-powered tweet generation
+├── post-tweet.command         # 🖱️ One-click tweet poster (macOS)
+├── test-tweet.command         # 🧪 One-click tweet tester (macOS)
 ├── requirements.txt           # Python dependencies
 ├── .env                       # Your API credentials (create from .env.example)
 ├── .env.example              # Example configuration template
