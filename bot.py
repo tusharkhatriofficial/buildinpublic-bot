@@ -56,6 +56,75 @@ class TwitterBot:
         # Track which commits have been tweeted
         self.commit_index = 0
         self.all_insights = []
+        self.used_commit_hashes = self._load_used_commits()
+        
+    def _load_used_commits(self):
+        """Load commit hashes that have already been tweeted"""
+        used_hashes = set()
+        try:
+            import json
+            if os.path.exists('posted_tweets.json'):
+                with open('posted_tweets.json', 'r') as f:
+                    posted = json.load(f)
+                    for tweet in posted:
+                        if 'metadata' in tweet and 'hash' in tweet['metadata']:
+                            used_hashes.add(tweet['metadata']['hash'])
+            logger.info(f"Loaded {len(used_hashes)} previously tweeted commits")
+        except Exception as e:
+            logger.warning(f"Could not load used commits: {e}")
+        return used_hashes
+    
+    def _score_commit(self, commit: dict) -> float:
+        """Score a commit based on its potential for interesting tweets"""
+        score = 1.0
+        
+        # Already used? Score 0
+        if commit['hash'] in self.used_commit_hashes:
+            return 0.0
+        
+        # Prioritize commits with LLM insights
+        if commit.get('llm_insights'):
+            score += 1.0
+        
+        # File changes (sweet spot is 2-10 files)
+        files = commit['files_changed']
+        if files < 1:
+            score -= 0.5
+        elif 2 <= files <= 10:
+            score += 0.3
+        elif files > 20:
+            score -= 0.2  # Too big, might be messy
+        
+        # Category bonuses
+        categories = commit.get('categories', [])
+        if 'feature' in categories:
+            score += 0.4
+        if 'performance' in categories:
+            score += 0.3
+        if 'bug fix' in categories:
+            score += 0.2
+        if 'documentation' in categories:
+            score -= 0.3  # De-prioritize docs
+        if 'general' in categories and len(categories) == 1:
+            score -= 0.2  # Generic commits less interesting
+        
+        # Tech stack diversity (more tech = more interesting)
+        tech_count = len(commit.get('tech_stack', []))
+        if tech_count >= 2:
+            score += 0.2
+        
+        # Message quality (avoid generic messages)
+        message = commit['message'].lower()
+        generic_terms = ['update', 'fix typo', 'merge', 'wip', 'temp']
+        if any(term in message for term in generic_terms):
+            score -= 0.3
+        
+        # Specific implementation terms (good signals)
+        good_terms = ['implement', 'add', 'create', 'build', 'optimize', 'refactor']
+        if any(term in message for term in good_terms):
+            score += 0.2
+        
+        return max(0.0, score)
         
     def _setup_twitter_api(self):
         """Setup Twitter API authentication"""
@@ -100,41 +169,47 @@ class TwitterBot:
                         return tweet, metadata
                 return None, None
             
-            # Try to generate tweets from commits in chronological order
-            max_attempts = min(len(self.all_insights), 20)
-            attempts = 0
+            # Score all unused commits and sort by score
+            scored_commits = []
+            for commit in self.all_insights:
+                score = self._score_commit(commit)
+                if score > 0:
+                    scored_commits.append((score, commit))
             
-            while attempts < max_attempts and self.commit_index < len(self.all_insights):
-                attempts += 1
+            # Sort by score (highest first)
+            scored_commits.sort(reverse=True, key=lambda x: x[0])
+            
+            if not scored_commits:
+                logger.info("All commits have been used, generating milestone tweet")
+                overview = self.analyzer.get_project_overview()
+                tweet, metadata = self.tweet_generator.generate_milestone(overview)
+                if tweet:
+                    # Reset used commits to start over
+                    self.used_commit_hashes.clear()
+                    return tweet, metadata
+                return None, None
+            
+            # Try top-scored commits
+            max_attempts = min(len(scored_commits), 10)
+            
+            for i in range(max_attempts):
+                score, commit_insight = scored_commits[i]
                 
-                # Get next commit
-                commit_insight = self.all_insights[self.commit_index]
-                self.commit_index += 1
-                
-                # Skip very small commits (like config changes)
-                if commit_insight['files_changed'] < 1:
-                    continue
-                
-                # Skip documentation-only commits sometimes
-                if 'documentation' in commit_insight['categories'] and random.random() < 0.7:
-                    continue
-                
-                logger.info(f"Generating tweet for commit: {commit_insight['message'][:50]}")
+                logger.info(f"Trying commit (score: {score:.2f}): {commit_insight['message'][:50]}")
                 tweet, metadata = self.tweet_generator.generate_from_commit(commit_insight)
                 
                 if tweet:
                     logger.info(f"Generated tweet from commit {commit_insight['hash']}")
+                    # Mark as used
+                    self.used_commit_hashes.add(commit_insight['hash'])
                     return tweet, metadata
             
-            # If we've gone through all commits, generate a milestone tweet
-            if self.commit_index >= len(self.all_insights):
-                logger.info("Reached end of commits, generating milestone tweet")
-                overview = self.analyzer.get_project_overview()
-                tweet, metadata = self.tweet_generator.generate_milestone(overview)
-                if tweet:
-                    # Reset to start over
-                    self.commit_index = 0
-                    return tweet, metadata
+            # If we couldn't generate from any commit, try milestone
+            logger.info("Could not generate from commits, trying milestone")
+            overview = self.analyzer.get_project_overview()
+            tweet, metadata = self.tweet_generator.generate_milestone(overview)
+            if tweet:
+                return tweet, metadata
             
             logger.warning("Could not generate tweet")
             return None, None

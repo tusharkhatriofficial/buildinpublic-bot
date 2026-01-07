@@ -47,7 +47,9 @@ python bot.py analyze && python bot.py post-now
 
 ### 🚀 Smart Features
 - **One-Time Analysis** - Analyze once, tweet forever
-- **Duplicate Prevention** - Never repeats content
+- **Advanced Duplicate Prevention** - Tracks commit hashes & semantic similarity (65% threshold)
+- **Smart Commit Scoring** - Prioritizes impactful commits (features > docs)
+- **Quality Control** - Evaluates tweets with 0.6+ quality threshold & auto-retry
 - **Natural Language** - No robotic tweets
 - **Project Branding** - Auto-includes name & GitHub link
 - **Character Optimized** - Perfect for Twitter free tier
@@ -60,7 +62,7 @@ python bot.py analyze && python bot.py post-now
 
 ## 🎯 How It Works
 
-**1.** Analyze your commits once → **2.** AI extracts insights → **3.** Tweet daily on autopilot
+**1.** Analyze your commits once → **2.** AI extracts insights → **3.** Smart scoring & quality control → **4.** Tweet daily on autopilot
 
 <div align="center">
 
@@ -69,8 +71,10 @@ python bot.py analyze && python bot.py post-now
 | 📁 | Copy your project to `code/` folder |
 | 🔍 | DevEcho reads Git commit history |
 | 🤖 | AI analyzes what you built |
+| 🎯 | Scores commits by impact (features, performance, etc.) |
 | 💾 | Insights cached locally |
-| 🐦 | Tweets posted daily |
+| ✅ | Quality checks + duplicate detection |
+| 🐦 | Tweets posted daily (never repeats commits!) |
 
 </div>
 
@@ -288,7 +292,68 @@ python bot.py commits
 # Run bot with daily scheduler
 python bot.py
 ```
+### What You'll See in Logs
 
+After the improvements, you'll see detailed information:
+
+```bash
+# Before (Old System):
+Generating tweet for commit: Initial commit...
+
+# After (New System with Smart Features):
+Loaded 7 previously tweeted commits  # Tracking works!
+Trying commit (score: 2.10): Implemented EventResponse dto  # Smart scoring!
+LLM generated tweet (quality: 0.85): Eventara: Built robust DTOs...  # Quality control!
+```
+
+**Key Metrics:**
+- **Commit Scores**: 2.0+ (Excellent) → 1.5-2.0 (Good) → 1.0-1.5 (Decent) → 0.5-1.0 (Low)
+- **Tweet Quality**: 0.8-1.0 (Excellent) → 0.6-0.8 (Good) → Below 0.6 (Auto-retry)
+
+---
+
+## 🎯 Smart Features Explained
+
+### 🚫 Advanced Duplicate Prevention
+- **Commit Hash Tracking**: Never tweets the same commit twice
+- **Semantic Similarity**: Detects similar tweets with 65% threshold
+- **Persistent Memory**: Remembers all previous tweets across restarts
+
+### 🧠 Intelligent Commit Scoring
+Commits are automatically scored based on impact:
+- **+1.0** - Has LLM insights
+- **+0.4** - Feature implementation
+- **+0.3** - Performance optimization
+- **+0.2** - Bug fix or refactor
+- **-0.3** - Documentation (de-prioritized)
+- **+0.3** - Optimal file count (2-10 files)
+- **+0.2** - Multiple technologies used
+- **-0.3** - Generic commit messages ("update", "wip", "merge")
+
+**Result**: The bot tweets your most impactful work first!
+
+### ✅ Quality Control System
+Every generated tweet is scored on:
+- ✓ Project name included
+- ✓ #BuildInPublic hashtag present
+- ✓ GitHub link added
+- ✓ Technical specifics (bullets, numbers)
+- ✓ Minimum 100 characters
+- ✓ Not too generic
+
+**Minimum Score**: 0.6/1.0 (auto-retries up to 3 times if below)
+
+---
+
+## 🎮 Usage
+
+### Available Commands
+
+```bash
+# Build knowledge base (run once, first time only)
+python bot.py analyze
+
+# Test tweet generation (without posting)
 ### Run the Bot (Scheduled Mode)
 
 Start the bot to post tweets daily at the scheduled time:
